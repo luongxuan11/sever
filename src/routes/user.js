@@ -1,9 +1,9 @@
-import express from 'express'
+import * as controllers from "../controllers";
+import express from "express";
+import { verifyToken } from "../middlewares/verifyToken";
+const userRouter = express.Router();
 
-const userRouter = express.Router()
+userRouter.use(verifyToken);
+userRouter.get("/get-current", controllers.getCurrent);
 
-userRouter.get('/', (req, res) =>{
-    res.send('user on...')
-})
-
-export default userRouter
+export default userRouter;

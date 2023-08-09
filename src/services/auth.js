@@ -2,7 +2,7 @@ import db from "../models";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { v4 } from "uuid";
-require("dotenv").config;
+require("dotenv").config();
 
 const hashPassword = (password) => {
   return bcrypt.hashSync(password, bcrypt.genSaltSync(12));
@@ -30,7 +30,7 @@ export const register = ({ phone, password, userName }) =>
               phone: res[0].phone,
             },
             process.env.JWT_SECRET,
-            { expiresIn: "2d" }
+            { expiresIn: "60s" }
           )
         : null;
 

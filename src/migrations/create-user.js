@@ -20,8 +20,11 @@ module.exports = {
       zalo: {
         type: Sequelize.STRING
       },
-      avatar: {
+      facebook: {
         type: Sequelize.STRING
+      },
+      avatar: {
+        type: Sequelize.BLOB('long')
       },
       createdAt: {
         allowNull: false,
