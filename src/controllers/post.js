@@ -63,3 +63,18 @@ export const createNewPost = async (req, res) => {
     internalError(res, error.message);
   }
 };
+
+export const getPostLimitAdmin = async (req, res) => {
+  const { page, ...query } = req.query;
+  const {id} = req.user
+  try {
+    if(!id) return res.status(400).json({
+      err: 1,
+      mess: 'login please!'
+    })
+    const response = await service.getPostsLimitAdmin(page, id ,query);
+    return res.status(200).json(response);
+  } catch (error) {
+    internalError(res, error.message);
+  }
+};

@@ -5,7 +5,6 @@ import "../server/src/config/connectDB";
 dotenv.config();
 
 import initRouter from "./src/routes";
-
 const app = express();
 
 app.use(

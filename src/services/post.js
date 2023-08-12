@@ -1,10 +1,11 @@
 import db from "../models";
 import { Op } from "sequelize";
 import dotenv from "dotenv";
+import moment from "moment";
 dotenv.config();
 import { v4 as generateId } from "uuid";
 import generateCode from "../helpers/generateCode";
-import moment from "moment";
+import generateDate from "../helpers/generateDate";
 
 export const getAllPostsService = () =>
   new Promise(async (resolve, reject) => {
@@ -131,7 +132,7 @@ export const createNewPost = (body, userId) => // receive from controller
         ? generateCode(body?.province?.replace("Thành phố", ""))
         : generateCode(body?.province?.replace("Tỉnh", ""));
       const hashtag = Math.floor(Math.random() * Math.pow(10, 6));
-      const currentDate = new Date();
+      const currentDate = generateDate();
 
       // create post
       await db.Post.create({
@@ -178,8 +179,8 @@ export const createNewPost = (body, userId) => // receive from controller
         type: body.category,
         target: body.target,
         bonus: "Tin thường",
-        created: new Date(),
-        expire: currentDate.setDate(currentDate.getDate() + 10),
+        created: currentDate.today,
+        expire: currentDate.expireDay,
       });
 
       // province
@@ -213,6 +214,54 @@ export const createNewPost = (body, userId) => // receive from controller
       resolve({
         err: 0,
         mess: "OK",
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+
+
+  export const getPostsLimitAdmin = (page, id, query) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const queries = { ...query, userId: id};
+      const res = await db.Post.findAndCountAll({
+        where: queries,
+        raw: true,
+        nest: true,
+        offset: page * +process.env.LIMIT || 0,
+        limit: +process.env.LIMIT,
+        order: [["createdAt", "DESC"]],
+        include: [
+          // db image
+          { model: db.Image, as: "images", attributes: ["image"] },
+
+          // db attr
+          {
+            model: db.Attribute,
+            as: "attribute",
+            attributes: ["price", "acreage", "published", "hashtag"],
+          },
+
+          // db overview
+          {
+            model: db.Overview,
+            as: "overviews",
+          },
+
+          //db user
+          {
+            model: db.User,
+            as: "user",
+            attributes: ["userName", "zalo", "phone"],
+          },
+        ],
+        attributes: ["id", "title", "star", "address", "description"],
+      });
+      resolve({
+        err: res ? 0 : 1,
+        mess: res ? "OK" : "got posts fail...",
+        res: res,
       });
     } catch (error) {
       reject(error);
