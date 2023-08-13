@@ -247,14 +247,17 @@ export const createNewPost = (body, userId) => // receive from controller
           {
             model: db.Overview,
             as: "overviews",
+            attributes: {
+              exclude: ['createdAt', 'updatedAt']
+            }
           },
 
           //db user
-          {
-            model: db.User,
-            as: "user",
-            attributes: ["userName", "zalo", "phone"],
-          },
+          // {
+          //   model: db.User,
+          //   as: "user",
+          //   attributes: ["userName", "zalo", "phone"],
+          // },
         ],
         attributes: ["id", "title", "star", "address", "description"],
       });
