@@ -259,12 +259,103 @@ export const createNewPost = (body, userId) => // receive from controller
           //   attributes: ["userName", "zalo", "phone"],
           // },
         ],
-        attributes: ["id", "title", "star", "address", "description"],
       });
       resolve({
         err: res ? 0 : 1,
         mess: res ? "OK" : "got posts fail...",
         res: res,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+
+
+  // update
+  export const updatePost = ({ postId,overviewId,imageId,attributeId, ...body}) =>
+  new Promise(async (resolve, reject) => {
+    console.log(imageId)
+    try {
+      const labelCode = body?.labelCode.replace(/,/g, "").trim();
+      const provincesCode = body?.province.includes("Thành phố")
+        ? generateCode(body?.province?.replace("Thành phố", ""))
+        : generateCode(body?.province?.replace("Tỉnh", ""));
+
+        // update
+      await db.Post.update({
+        title: body.title,
+        labelCode: generateCode(labelCode),
+        address: body.address || null,
+        categoriesCode: body.categoryCode,
+        description: JSON.stringify(body.description) || null,
+        acreagesCode: body.acreageCode || null,
+        pricesCode: body.priceCode || null,
+        provincesCode,
+        pricesNumber: body.priceNumber,
+        acreagesNumber: body.acreageNumber,
+      }, {
+        where: {id: postId}
+      });
+
+      // update attribute
+      await db.Attribute.update({
+        price:
+          +body.priceNumber < 1
+            ? `${+body.priceNumber * 1000000} đồng/tháng`
+            : `${+body.priceNumber} triệu/tháng`,
+        acreage: `${body.acreageNumber}m2`,
+      }, {
+        where: {id: attributeId}
+      });
+
+      //create image
+      await db.Image.update({
+        image: JSON.stringify(body.images),
+      }, {
+        where: {id: imageId}
+      });
+
+      // create overview
+      await db.Overview.update({
+        area: body.province || null,
+        type: body.category,
+        target: body.target,
+      },{
+        where: {id: overviewId}
+      });
+
+      // province
+      await db.Province.findOrCreate({
+        where: {
+          [Op.or]: [
+            { value: body?.province?.replace("Thành phố", "") },
+            { value: body?.province?.replace("Tỉnh", "") },
+          ],
+        },
+        defaults: {
+          code: body?.province?.includes("Thành phố")
+            ? generateCode(body?.province?.replace("Thành phố", ""))
+            : generateCode(body?.province?.replace("Tỉnh", "")),
+          value: body?.province?.includes("Thành phố")
+            ? body?.province?.replace("Thành phố", "")
+            : body?.province?.replace("Tỉnh", ""),
+        },
+      });
+
+      // label
+      await db.Label.findOrCreate({
+        where: {
+          code: generateCode(labelCode),
+        },
+        defaults: {
+          code: generateCode(labelCode),
+          value: body?.labelCode,
+        },
+      });
+      // console.log(res)
+      resolve({
+        err: 0,
+        mess:  "update" ,
       });
     } catch (error) {
       reject(error);

@@ -78,3 +78,18 @@ export const getPostLimitAdmin = async (req, res) => {
     internalError(res, error.message);
   }
 };
+
+export const updatePost = async (req, res) => {
+  const { postId,overviewId,imageId,attributeId} = req.body;
+  const { id } = req.user
+  try {
+    if(!postId && !id && !overviewId && !imageId && !attributeId) return res.status(400).json({
+      err: 1,
+      mess: 'missing input'
+    })
+    const response = await service.updatePost(req.body);
+    return res.status(200).json(response);
+  } catch (error) {
+    internalError(res, error.message);
+  }
+};
