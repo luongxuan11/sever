@@ -73,7 +73,7 @@ export const getPostsLimit = (page, query, { pricesNumber, acreagesNumber }) =>
           {
             model: db.User,
             as: "user",
-            attributes: ["userName", "zalo", "phone"],
+            attributes: ["userName", "zalo", "phone", "avatar"],
           },
         ],
         attributes: ["id", "title", "star", "address", "description"],
@@ -356,6 +356,26 @@ export const createNewPost = (body, userId) => // receive from controller
       resolve({
         err: 0,
         mess:  "update" ,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+
+
+  // delete
+  export const deletePostsLimitAdmin = (postId) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const res = await db.Post.destroy({
+        where: {id: postId},
+        
+      });
+      console.log(res)
+      resolve({
+        err: res ? 0 : 1,
+        mess: res ? "Delete OK" : "No post delete...",
+        res: res,
       });
     } catch (error) {
       reject(error);

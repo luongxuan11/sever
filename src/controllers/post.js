@@ -93,3 +93,18 @@ export const updatePost = async (req, res) => {
     internalError(res, error.message);
   }
 };
+
+export const deletePost = async (req, res) => {
+  const { postId } = req.query; // gửi lên dạng params nên req.query
+  const { id } = req.user
+  try {
+    if(!postId && !id) return res.status(400).json({
+      err: 1,
+      mess: 'missing input'
+    })
+    const response = await service.deletePostsLimitAdmin(postId);
+    return res.status(200).json(response);
+  } catch (error) {
+    internalError(res, error.message);
+  }
+};

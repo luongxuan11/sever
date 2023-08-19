@@ -5,5 +5,6 @@ const userRouter = express.Router();
 
 userRouter.use(verifyToken);
 userRouter.get("/get-current", controllers.getCurrent);
+userRouter.put("/", controllers.updateUser);
 
 export default userRouter;

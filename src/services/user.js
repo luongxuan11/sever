@@ -27,3 +27,20 @@ export const getOne = (userId) =>
       reject(error);
     }
   });
+
+  export const updateUser = (userId, payload) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const res = await db.User.update(payload, {
+        where: {id: userId}
+      });
+      // console.log(res)
+      resolve({
+        err: res[0] > 0 ? 0 : 1, // hàm update sẽ trả về 1 cái mảng 
+        mes: res[0] > 0 ? "updated" : "fail to update",
+        userData: res
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });

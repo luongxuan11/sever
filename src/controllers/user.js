@@ -10,3 +10,19 @@ export const getCurrent = async (req, res) => {
     return internalError(res);
   }
 };
+
+
+export const updateUser = async (req, res) => {
+  try {
+    const { id } = req.user; 
+    const {...payload} = req.body
+    if(!payload) return res.status(400).json({
+      err: 1,
+      mess: 'missing input'
+    })
+    const response = await services.updateUser(id, payload);
+    return res.status(200).json(response);
+  } catch (error) {
+    return internalError(res);
+  }
+};

@@ -11,5 +11,6 @@ router.use(verifyToken)
 router.post('/create-new',  controllers.createNewPost)
 router.get("/limit-admin", controllers.getPostLimitAdmin);
 router.put("/update", controllers.updatePost);
+router.delete("/delete", controllers.deletePost);
 
 export default router;
