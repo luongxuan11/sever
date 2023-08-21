@@ -87,9 +87,10 @@ export const getPostLimitAdmin = async (req, res) => {
 };
 
 export const updatePost = async (req, res) => {
-  const { postId, overviewId, imageId, attributeId, imageLink, fileName} = req.body;
+  const { postId, overviewId, imageId, attributeId, imageLink, fileName, fireFileName} = req.body;
   const { id } = req.user;
   const fileData = req.files
+  let deleteImg = fireFileName.split(',')
   // data new
   let fileDataArr = []
   let fileNameArr = []
@@ -103,6 +104,22 @@ export const updatePost = async (req, res) => {
   // combine arr
   let combineArrLink = fileDataArr.concat(dataLinkOld)
   let combineArrName = fileNameArr.concat(dataNameOld)
+
+  // delete fireFilename upload
+  if (deleteImg && deleteImg.length > 0) {
+    if (deleteImg.length === 1) {
+      // Nếu chỉ có một tệp, xóa bằng phương thức destroy
+      await cloudinary.uploader.destroy(deleteImg[0]);
+    } else {
+      // Nếu có nhiều tệp, lấy danh sách các public IDs và xóa bằng phương thức delete_resources
+      const publicIds = deleteImg.map(file => file);
+      await cloudinary.api.delete_resources(publicIds, function(error, result) {
+        console.log(result); // Kết quả từ việc xóa tệp
+      });
+    }
+  }
+  // end delete file update
+
   try {
     if (!postId || !id || !overviewId || !imageId || !attributeId){
       if (fileData && fileData.length > 0) {
@@ -132,7 +149,7 @@ export const updatePost = async (req, res) => {
 
 export const deletePost = async (req, res) => {
   const { postId, fileName} = req.query; // gửi lên dạng params nên req.query
-  // console.log(fileName)
+  // console.log(JSON.parse(fileName))
   // console.log(req.query)
   const { id } = req.user;
   try {

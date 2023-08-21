@@ -395,6 +395,7 @@ export const createNewPost = (body,fileData ,userId) => // receive from controll
   new Promise(async (resolve, reject) => {
     try {
       const fileNameResult = JSON.parse(fileName)
+      console.log(fileNameResult)
       console.log("============",fileNameResult)
       const res = await db.Post.destroy({
         where: {id: postId},
