@@ -2,6 +2,7 @@ import db from "../models";
 import { Op } from "sequelize";
 import dotenv from "dotenv";
 import moment from "moment";
+const cloudinary = require('cloudinary').v2
 dotenv.config();
 import { v4 as generateId } from "uuid";
 import generateCode from "../helpers/generateCode";
@@ -120,7 +121,7 @@ export const getNewPost = () =>
     }
   });
 
-export const createNewPost = (body, userId) => // receive from controller
+export const createNewPost = (body,fileData ,userId) => // receive from controller
 
   new Promise(async (resolve, reject) => {
     try {
@@ -133,7 +134,10 @@ export const createNewPost = (body, userId) => // receive from controller
         : generateCode(body?.province?.replace("Tỉnh", ""));
       const hashtag = Math.floor(Math.random() * Math.pow(10, 6));
       const currentDate = generateDate();
-
+      const paths = fileData.map(item => item.path)
+      const fileName = fileData.map(item => item.filename) 
+      console.log(fileName)
+      console.log(paths)
       // create post
       await db.Post.create({
         id: generateId(),
@@ -168,7 +172,8 @@ export const createNewPost = (body, userId) => // receive from controller
       //create image
       await db.Image.create({
         id: imageId,
-        image: JSON.stringify(body.images),
+        image: JSON.stringify(paths),
+        fileName: JSON.stringify(fileName)
       });
 
       // create overview
@@ -217,6 +222,18 @@ export const createNewPost = (body, userId) => // receive from controller
       });
     } catch (error) {
       reject(error);
+      if (fileData && fileData.length > 0) {
+        if (fileData.length === 1) {
+          // Nếu chỉ có một tệp, xóa bằng phương thức destroy
+          await cloudinary.uploader.destroy(fileData[0].filename);
+        } else {
+          // Nếu có nhiều tệp, lấy danh sách các public IDs và xóa bằng phương thức delete_resources
+          const publicIds = fileData.map(file => file.filename);
+          await cloudinary.api.delete_resources(publicIds, function(error, result) {
+            console.log(result); // Kết quả từ việc xóa tệp
+          });
+        }
+      }
     }
   });
 
@@ -234,7 +251,7 @@ export const createNewPost = (body, userId) => // receive from controller
         order: [["createdAt", "DESC"]],
         include: [
           // db image
-          { model: db.Image, as: "images", attributes: ["image"] },
+          { model: db.Image, as: "images", attributes: ["image", "fileName"] },
 
           // db attr
           {
@@ -272,9 +289,8 @@ export const createNewPost = (body, userId) => // receive from controller
 
 
   // update
-  export const updatePost = ({ postId,overviewId,imageId,attributeId, ...body}) =>
+  export const updatePost = ({ postId,overviewId,imageId,attributeId, ...body}, combineArrLink, combineArrName) =>
   new Promise(async (resolve, reject) => {
-    console.log(imageId)
     try {
       const labelCode = body?.labelCode.replace(/,/g, "").trim();
       const provincesCode = body?.province.includes("Thành phố")
@@ -310,9 +326,10 @@ export const createNewPost = (body, userId) => // receive from controller
 
       //create image
       await db.Image.update({
-        image: JSON.stringify(body.images),
+        image: JSON.stringify(combineArrLink),
+        fileName: JSON.stringify(combineArrName)
       }, {
-        where: {id: imageId}
+        where: {id: imageId},
       });
 
       // create overview
@@ -359,14 +376,26 @@ export const createNewPost = (body, userId) => // receive from controller
       });
     } catch (error) {
       reject(error);
+      if (fileData && fileData.length > 0) {
+        if (fileData.length === 1) {
+          await cloudinary.uploader.destroy(fileData[0].filename);
+        } else {
+          const publicIds = fileData.map(file => file.filename);
+          await cloudinary.api.delete_resources(publicIds, function(error, result) {
+            console.log(result);
+          });
+        }
+      }
     }
   });
 
 
   // delete
-  export const deletePostsLimitAdmin = (postId) =>
+  export const deletePostsLimitAdmin = (postId, fileName) =>
   new Promise(async (resolve, reject) => {
     try {
+      const fileNameResult = JSON.parse(fileName)
+      console.log("============",fileNameResult)
       const res = await db.Post.destroy({
         where: {id: postId},
         
@@ -377,6 +406,17 @@ export const createNewPost = (body, userId) => // receive from controller
         mess: res ? "Delete OK" : "No post delete...",
         res: res,
       });
+      if (fileNameResult && fileNameResult.length > 0) {
+        if (fileNameResult.length === 1) {
+          await cloudinary.uploader.destroy(fileNameResult);
+        } else {
+          for (const fileName of fileNameResult) {
+            await cloudinary.uploader.destroy(fileName, function(error, result) {
+              console.log(result);
+            });
+          }
+        }
+      }
     } catch (error) {
       reject(error);
     }
