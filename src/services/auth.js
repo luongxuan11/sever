@@ -64,7 +64,7 @@ export const login = ({ phone, password }) =>
               phone: res.phone,
             },
             process.env.JWT_SECRET,
-            { expiresIn: "2d" }
+            { expiresIn: "5d" }
           )
         : null;
 

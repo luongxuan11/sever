@@ -1,5 +1,5 @@
 import db from "../models";
-import { Op } from "sequelize";
+import { Op, literal } from "sequelize";
 import dotenv from "dotenv";
 import moment from "moment";
 const cloudinary = require('cloudinary').v2
@@ -44,21 +44,40 @@ export const getAllPostsService = () =>
     }
   });
 
-export const getPostsLimit = (page, query, { pricesNumber, acreagesNumber }) =>
+export const getPostsLimit = (page, {limitPost, ...query}, { pricesNumber, acreagesNumber }) =>
   new Promise(async (resolve, reject) => {
     try {
-      // let offset = !page || +page <= 1 ? 0 : +page
+      // console.log('query',query)
+      let offset = !page || +page <= 1 ? 0 : +page
       const queries = { ...query };
-      if (pricesNumber) queries.pricesNumber = { [Op.between]: pricesNumber };
-      
-      if (acreagesNumber) queries.acreagesNumber = { [Op.between]: acreagesNumber };
+      const limit = +limitPost || +process.env.LIMIT
+      queries.limit = limit
+
+      // price
+      if (pricesNumber && pricesNumber?.length === 2){
+        query.pricesNumber = { [Op.between]: pricesNumber };
+      }else if(pricesNumber?.length === 1){
+        query.pricesNumber = { [Op.gt]: pricesNumber };
+      } 
+
+      // acreage
+      if (acreagesNumber && acreagesNumber?.length === 2){
+        query.acreagesNumber = { [Op.between]: acreagesNumber };
+      }else if(acreagesNumber?.length === 1){
+        query.acreagesNumber = { [Op.gt]: acreagesNumber };
+      }
+      // if(order) queries.order = [order]
+
+      // console.log(queries)
       const res = await db.Post.findAndCountAll({
-        where: queries,
+        where: query,
         raw: true,
         nest: true,
-        offset: page * +process.env.LIMIT || 0,
-        limit: +process.env.LIMIT,
+        offset: offset * limit,
+        // limit: +process.env.LIMIT,
         order: [["createdAt", "DESC"]],
+        ...queries,
+
         include: [
           // db image
           { model: db.Image, as: "images", attributes: ["image"] },
@@ -68,6 +87,12 @@ export const getPostsLimit = (page, query, { pricesNumber, acreagesNumber }) =>
             model: db.Attribute,
             as: "attribute",
             attributes: ["price", "acreage", "published", "hashtag"],
+          },
+          // overview
+          {
+            model: db.Overview,
+            as: "overviews",
+            attributes: ["area", "target", "type", "created", "expire", "bonus"]
           },
 
           //db user
@@ -132,6 +157,7 @@ export const createNewPost = (body,fileData ,userId) => // receive from controll
       const provincesCode = body?.province.includes("Thành phố")
         ? generateCode(body?.province?.replace("Thành phố", ""))
         : generateCode(body?.province?.replace("Tỉnh", ""));
+        console.log(provincesCode)
       const hashtag = Math.floor(Math.random() * Math.pow(10, 6));
       const currentDate = generateDate();
       const paths = fileData.map(item => item.path)
@@ -191,15 +217,14 @@ export const createNewPost = (body,fileData ,userId) => // receive from controll
       // province
       await db.Province.findOrCreate({
         where: {
-          [Op.or]: [
-            { value: body?.province?.replace("Thành phố", "") },
-            { value: body?.province?.replace("Tỉnh", "") },
-          ],
+          // [Op.or]: [
+          //   { value: body?.province?.replace("Thành phố", "") },
+          //   { value: body?.province?.replace("Tỉnh", "") },
+          // ],
+          code: provincesCode
         },
         defaults: {
-          code: body?.province?.includes("Thành phố")
-            ? generateCode(body?.province?.replace("Thành phố", ""))
-            : generateCode(body?.province?.replace("Tỉnh", "")),
+          code: provincesCode,
           value: body?.province?.includes("Thành phố")
             ? body?.province?.replace("Thành phố", "")
             : body?.province?.replace("Tỉnh", ""),
