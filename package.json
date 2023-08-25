@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "api for phongtro",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon --exec babel-node sever.js"
@@ -31,9 +32,6 @@
     "pg": "^8.11.3",
     "sequelize": "^6.31.1",
     "sqlite3": "^5.1.6",
-    "uuid": "^9.0.0",
-    "@babel/core": "^7.22.1",
-    "@babel/node": "^7.22.1",
-    "@babel/preset-env": "^7.22.2"
+    "uuid": "^9.0.0"
   }
 }
