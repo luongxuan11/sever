@@ -9,14 +9,15 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: "*",
     optionsSuccessStatus: 200,
     methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept"],
   })
 );
 
-app.use(express.json({limit: '10mb'}));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 initRouter(app);
 
