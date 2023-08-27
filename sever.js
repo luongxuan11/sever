@@ -12,7 +12,7 @@ app.use(
     origin: "*",
     optionsSuccessStatus: 200,
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept"],
+    // allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept"],
   })
 );
 
