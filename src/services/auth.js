@@ -30,7 +30,7 @@ export const register = ({ phone, password, userName }) =>
               phone: res[0].phone,
             },
             process.env.JWT_SECRET,
-            { expiresIn: "60s" }
+            { expiresIn: "15d"}
           )
         : null;
 
@@ -64,7 +64,7 @@ export const login = ({ phone, password }) =>
               phone: res.phone,
             },
             process.env.JWT_SECRET,
-            { expiresIn: "5d" }
+            { expiresIn: "15d" }
           )
         : null;
 
