@@ -13,49 +13,53 @@ import generateCode from "../helpers/generateCode";
 const dataBody = [
   {
     body: choThueMatBang.body,
-    code: 'CTMB' 
+    code: "CTMB",
   },
   {
     body: choThueCanHo.body,
-    code: 'CTCH' 
+    code: "CTCH",
   },
   {
     body: choThuePhongTro.body,
-    code: 'CTPT' 
+    code: "CTPT",
   },
   {
     body: nhaChoThue.body,
-    code: 'NCT' 
+    code: "NCT",
   },
 ];
 
 const categories = [
   {
-    code: 'CTCH',
-    value: 'Cho thuê căn hộ',
-    header: 'Cho Thuê Căn Hộ Chung Cư, Giá Rẻ, Mới Nhất 2022',
-    subheader: 'Cho thuê căn hộ - Kênh đăng tin cho thuê căn hộ số 1: giá rẻ, chính chủ, đầy đủ tiện nghi. Cho thuê chung cư với nhiều mức giá, diện tích cho thuê khác nhau.'
+    code: "CTCH",
+    value: "Cho thuê căn hộ",
+    header: "Cho Thuê Căn Hộ Chung Cư, Giá Rẻ, Mới Nhất 2022",
+    subheader:
+      "Cho thuê căn hộ - Kênh đăng tin cho thuê căn hộ số 1: giá rẻ, chính chủ, đầy đủ tiện nghi. Cho thuê chung cư với nhiều mức giá, diện tích cho thuê khác nhau.",
   },
   {
-    code: 'CTMB',
-    value: 'Cho thuê mặt bằng',
-    header: 'Cho Thuê Mặt Bằng, Cho Thuê Văn Phòng, Cửa Hàng, Kiot, Mới Nhất 2022',
-    subheader: 'Cho thuê mặt bằng - Kênh đăng tin cho thuê mặt bằng, cho thuê cửa hàng, cho thuê kiot số 1: giá rẻ, mặt tiền, khu đông dân cư, phù hợp kinh doanh.'
+    code: "CTMB",
+    value: "Cho thuê mặt bằng",
+    header:
+      "Cho Thuê Mặt Bằng, Cho Thuê Văn Phòng, Cửa Hàng, Kiot, Mới Nhất 2022",
+    subheader:
+      "Cho thuê mặt bằng - Kênh đăng tin cho thuê mặt bằng, cho thuê cửa hàng, cho thuê kiot số 1: giá rẻ, mặt tiền, khu đông dân cư, phù hợp kinh doanh.",
   },
   {
-    code: 'CTPT',
-    value: 'Cho thuê phòng trọ',
-    header: 'Cho Thuê Phòng Trọ, Giá Rẻ, Tiện Nghi, Mới Nhất 2022',
-    subheader: 'Cho thuê phòng trọ - Kênh thông tin số 1 về phòng trọ giá rẻ, phòng trọ sinh viên, phòng trọ cao cấp mới nhất năm 2022. Tất cả nhà trọ cho thuê giá tốt nhất tại Việt Nam.'
+    code: "CTPT",
+    value: "Cho thuê phòng trọ",
+    header: "Cho Thuê Phòng Trọ, Giá Rẻ, Tiện Nghi, Mới Nhất 2022",
+    subheader:
+      "Cho thuê phòng trọ - Kênh thông tin số 1 về phòng trọ giá rẻ, phòng trọ sinh viên, phòng trọ cao cấp mới nhất năm 2022. Tất cả nhà trọ cho thuê giá tốt nhất tại Việt Nam.",
   },
   {
-    code: 'NCT',
-    value: 'Nhà cho thuê',
-    header: 'Cho Thuê Nhà Nguyên Căn, Giá Rẻ, Chính Chủ, Mới Nhất 2022',
-    subheader: 'Cho thuê nhà nguyên căn - Kênh đăng tin cho thuê nhà số 1: giá rẻ, chính chủ, miễn trung gian, đầy đủ tiện nghi, mức giá, diện tích cho thuê khác nhau.'
+    code: "NCT",
+    value: "Nhà cho thuê",
+    header: "Cho Thuê Nhà Nguyên Căn, Giá Rẻ, Chính Chủ, Mới Nhất 2022",
+    subheader:
+      "Cho thuê nhà nguyên căn - Kênh đăng tin cho thuê nhà số 1: giá rẻ, chính chủ, miễn trung gian, đầy đủ tiện nghi, mức giá, diện tích cho thuê khác nhau.",
   },
-]
-
+];
 
 const hashPassword = (password) => {
   return bcrypt.hashSync(password, bcrypt.genSaltSync(12));
@@ -65,27 +69,33 @@ export const insertServices = () =>
   new Promise(async (resolve, reject) => {
     try {
       const provinces = [];
-      const labels = []
+      const labels = [];
 
-      await db.Category.bulkCreate(categories)
+      await db.Category.bulkCreate(categories);
 
       dataBody.forEach((cate) => {
         cate?.body?.forEach(async (item) => {
-          let postId = v4(); // do id bảng post là 1 chuỗi string
+          let postId = v4();
           let attributeId = v4();
           let userId = v4();
           let overviewId = v4();
           let imageId = v4();
-          let currentAcreage = getNumberFromString(item?.header?.attributes?.acreage);
-          let currentPrice = getNumberFromString(item?.header?.attributes?.price);
-          
+          let currentAcreage = getNumberFromString(
+            item?.header?.attributes?.acreage
+          );
+          let currentPrice = getNumberFromString(
+            item?.header?.attributes?.price
+          );
 
           let labelCode = generateCode(item?.header?.class?.classType).trim();
-          labels?.every((item) => item?.code !== labelCode) && labels.push({
-            code: labelCode,
-            value: item?.header?.class?.classType
-          })
-          let provincesCode = generateCode(item?.header?.address.split(",").slice(-1)[0]).trim();
+          labels?.every((item) => item?.code !== labelCode) &&
+            labels.push({
+              code: labelCode,
+              value: item?.header?.class?.classType,
+            });
+          let provincesCode = generateCode(
+            item?.header?.address.split(",").slice(-1)[0]
+          ).trim();
           provinces?.every((item) => item?.code !== provincesCode) &&
             provinces.push({
               code: provincesCode,
@@ -105,11 +115,20 @@ export const insertServices = () =>
             userId,
             overviewId,
             imageId,
-            acreagesCode: dataAcreage.find((acreage) => acreage.max > currentAcreage && acreage.min <= currentAcreage)?.code, // tức là thằng current phải nhỏ hơn thằng max và lớn hơn thằng min mới lấy
-            pricesCode: dataPrice.find((price) => price.max > currentPrice && price.min <= currentPrice)?.code,
+            acreagesCode: dataAcreage.find(
+              (acreage) =>
+                acreage.max > currentAcreage && acreage.min <= currentAcreage
+            )?.code, // tức là thằng current phải nhỏ hơn thằng max và lớn hơn thằng min mới lấy
+            pricesCode: dataPrice.find(
+              (price) => price.max > currentPrice && price.min <= currentPrice
+            )?.code,
             provincesCode,
-            pricesNumber: getNumberFromStringV2(item?.header?.attributes?.price),
-            acreagesNumber: getNumberFromStringV2(item?.header?.attributes?.acreage)
+            pricesNumber: getNumberFromStringV2(
+              item?.header?.attributes?.price
+            ),
+            acreagesNumber: getNumberFromStringV2(
+              item?.header?.attributes?.acreage
+            ),
           });
 
           // bảng attribute
@@ -173,10 +192,10 @@ export const insertServices = () =>
       provinces?.forEach(async (item) => {
         await db.Province.create(item);
       });
-      // label 
-      labels?.forEach(async(item) =>{
-        await db.Label.create(item)
-      })
+      // label
+      labels?.forEach(async (item) => {
+        await db.Label.create(item);
+      });
 
       resolve("Done");
     } catch (error) {
@@ -187,20 +206,20 @@ export const insertServices = () =>
 export const createPricesAndAcreage = () =>
   new Promise((resolve, reject) => {
     try {
-      dataPrice.forEach(async (item) => {
-        await db.Price.create({
-          code: item.code,
-          value: item.value,
+      // dataPrice.map(async (item) => {
+      //   await db.Price.create({
+      //     code: item.code,
+      //     value: item.value,
+      //   });
+      // }),
+        dataAcreage.map(async (item) => {
+          await db.Acreage.create({
+            code: item.code,
+            value: item.value,
+          });
         });
-      }),
-        // dataAcreage.forEach(async (item) => {
-        //   await db.Acreage.create({
-        //     code: item.code,
-        //     value: item.value,
-        //   });
-        // });
 
-      resolve("OK");
+        resolve("OK");
     } catch (error) {
       reject(error);
     }
